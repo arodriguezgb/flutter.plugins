@@ -152,7 +152,6 @@ public int onStartCommand(Intent intent, int flags, int startId) {
         );
     } catch (Exception ex) {
         Crashlytics.logException(ex);
-        LogManager.e("Service manager can't stop service ", ex);
     }
 
   }
