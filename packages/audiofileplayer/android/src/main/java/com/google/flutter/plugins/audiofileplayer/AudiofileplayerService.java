@@ -60,22 +60,10 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
   @Override
   public void onCreate() {
     super.onCreate();
+    startCommand();
+
     Log.i(TAG, "onCreate");
     instance = this;
-
-    mediaSession = new MediaSessionCompat(this, TAG);
-    mediaSession.setFlags(
-        MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-            | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-    PlaybackStateCompat.Builder stateBuilder =
-        new PlaybackStateCompat.Builder()
-            .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PLAY_PAUSE);
-    mediaSession.setPlaybackState(stateBuilder.build());
-
-    mediaSessionCallback = new MediaSessionCallback(); // Do i need this as ivar?
-    mediaSession.setCallback(mediaSessionCallback);
-
-    setSessionToken(mediaSession.getSessionToken());
   } 
 
   @Override
@@ -91,24 +79,24 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
     result.sendResult(null);
   }
 
-  @Override
-  public int onStartCommand(final Intent intent, int flags, int startId) {
-    Log.i(TAG, "onStartCommand");
-    if (intent != null) {
-      if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())
-          && intent.hasExtra(AudiofileplayerPlugin.CUSTOM_MEDIA_BUTTON_EXTRA_KEY)) {
-        // Check for custom button intent.
-        handleCustomButtonIntent(intent);
-      } else {
-        // If there is a KeyEvent in the intent, send it to the MediaButtonReceiver to pass to
-        // its callbacks.
-        if (mediaSession != null) {
-          MediaButtonReceiver.handleIntent(mediaSession, intent);
-        }
-      }
+@Override
+public int onStartCommand(Intent intent, int flags, int startId) {
+    if (intent == null) {
+        return START_NOT_STICKY;
     }
-    return super.onStartCommand(intent, flags, startId);
-  }
+    final int command = intent.getIntExtra(MAIN_SERVICE_COMMAND_KEY, -1);
+
+    if (command == MAIN_SERVICE_START_COMMAND) {
+        startCommand();
+        return START_STICKY;
+    }
+    return START_NOT_STICKY;
+}
+
+ private void startCommand() {
+    createNotificationAndStartForeground();
+    runningStatus.set(STARTED);
+}
 
   @Override
   public void onDestroy() {
@@ -155,17 +143,18 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
   }
 
   public void stop() {
-    metadata = null;
-    if (notificationActions != null) notificationActions.clear();
-    this.compactNotificationActionIndices = new int[0];
-    PlaybackStateCompat.Builder builder =
-        new PlaybackStateCompat.Builder()
-            .setActions(0)
-            .setState(PlaybackStateCompat.STATE_STOPPED, playbackStatePosition, 0.0f);
-    mediaSession.setPlaybackState(builder.build());
-    mediaSession.setActive(false);
-    stopForeground(true);
-    stopSelf();
+    try {
+        context.stopService(
+                new Intent(
+                        context,
+                        NavigationService.class
+                )
+        );
+    } catch (Exception ex) {
+        Crashlytics.logException(ex);
+        LogManager.e("Service manager can't stop service ", ex);
+    }
+
   }
 
   public void setPlaybackStateActions(long actions) {
@@ -313,6 +302,12 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
   public class MediaSessionCallback extends MediaSessionCompat.Callback {
     @Override
     public void onPlay() {
+    
+    ContextCompat.startForegroundService(
+            context,
+            NavigationService.getStartIntent(context)
+    );
+    
       Log.i(TAG, "MediaSessionCallback.onPlay");
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         startForegroundService(
@@ -339,8 +334,17 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
     @Override
     public void onStop() {
       Log.i(TAG, "MediaSessionCallback.onStop");
-      stopForeground(true);
-      stopSelf();
+      try {
+        context.stopService(
+                new Intent(
+                        context,
+                        NavigationService.class
+                )
+        );
+    } catch (Exception ex) {
+        Crashlytics.logException(ex);
+        LogManager.e("Service manager can't stop service ", ex);
+    }
     }
 
     @Override
