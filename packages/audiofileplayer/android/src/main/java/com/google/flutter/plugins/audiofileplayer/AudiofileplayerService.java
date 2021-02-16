@@ -353,12 +353,14 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
     public void onPause() {
       Log.i(TAG, "MediaSessionCallback.onPause");
     }
-
-    @Override
+  @Override
     public void onStop() {
       Log.i(TAG, "MediaSessionCallback.onStop");
-      stopForeground(true);
-      stopSelf();
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        stopForeground(true);
+      } else {
+        stopSelf();
+      }
     }
 
     @Override
