@@ -88,8 +88,8 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
       ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
       Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
               .setSmallIcon(getSmallIconId())
-              .setContentTitle("The app is running in the background")
-              .setContentText("Swipe for more information or to stop the app.").build();
+              .setContentTitle("The app is running")
+              .setContentText("This notification ensures your seamless experience with GentleBirth.").build();
 
       startForeground(11241223, notification);
     }
