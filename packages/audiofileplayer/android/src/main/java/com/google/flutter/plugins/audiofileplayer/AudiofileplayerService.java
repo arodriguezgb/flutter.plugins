@@ -355,11 +355,8 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
   @Override
     public void onStop() {
       Log.i(TAG, "MediaSessionCallback.onStop");
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         stopForeground(true);
-      } else {
         stopSelf();
-      }
     }
 
     @Override
