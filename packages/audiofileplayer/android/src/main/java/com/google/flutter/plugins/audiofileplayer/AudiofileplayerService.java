@@ -329,26 +329,25 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
   }
 
   public class MediaSessionCallback extends MediaSessionCompat.Callback {
-      @Override
+    @Override
     public void onPlay() {
-      Notification notif = buildNotification();
-
       Log.i(TAG, "MediaSessionCallback.onPlay");
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         startForegroundService(
             new Intent(AudiofileplayerService.this, AudiofileplayerService.class));
-
-        startForeground(NOTIFICATION_ID, notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-
       } else {
         startService(new Intent(AudiofileplayerService.this, AudiofileplayerService.class));
-
-        startForeground(NOTIFICATION_ID, notif);
       }
 
       if (!mediaSession.isActive()) mediaSession.setActive(true);
+      Notification notif = buildNotification();
+      // Display the notification and place the service in the foreground
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        startForeground(NOTIFICATION_ID, notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+      } else {
+        startForeground(NOTIFICATION_ID, notif);
+      }
     }
-
     @Override
     public void onPause() {
       Log.i(TAG, "MediaSessionCallback.onPause");
