@@ -77,7 +77,7 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
 
     setSessionToken(mediaSession.getSessionToken());
     
-    /* Notification notif = buildNotification();
+    Notification notif = buildNotification();
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       // Display the notification and place the service in the foreground
@@ -89,11 +89,11 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
       Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
               .setSmallIcon(getSmallIconId())
               .setContentTitle("The app is running")
-              .setContentText("This notification ensures your seamless experience with GentleBirth.").build();
+              .setContentText("This ensures a better experience for you with GentleBirth.").build();
 
       startForeground(11241223, notification);
     }
-    */
+    
   } 
 
   @Override
