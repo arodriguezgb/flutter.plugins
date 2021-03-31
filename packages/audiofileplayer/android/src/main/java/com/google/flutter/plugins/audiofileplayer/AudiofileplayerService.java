@@ -62,7 +62,7 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
     super.onCreate();
     Log.i(TAG, "onCreate");
     instance = this;
-
+    
     mediaSession = new MediaSessionCompat(this, TAG);
     mediaSession.setFlags(
         MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
@@ -76,7 +76,25 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
     mediaSession.setCallback(mediaSessionCallback);
 
     setSessionToken(mediaSession.getSessionToken());
-  }
+    
+    Notification notif = buildNotification();
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      // Display the notification and place the service in the foreground
+      //startForeground(NOTIFICATION_ID, notif);
+      String CHANNEL_ID = "GentleBirth";
+      NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+              "GentleBirth", NotificationManager.IMPORTANCE_NONE);
+      ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+      Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+              .setSmallIcon(getSmallIconId())
+              .setContentTitle("The app is running")
+              .setContentText("This ensures a better experience for you with GentleBirth.").build();
+
+      startForeground(11241223, notification);
+    }
+    
+  } 
 
   @Override
   public BrowserRoot onGetRoot(String clientPackageName, int clientUid, Bundle rootHints) {
@@ -330,17 +348,15 @@ public class AudiofileplayerService extends MediaBrowserServiceCompat
         startForeground(NOTIFICATION_ID, notif);
       }
     }
-
     @Override
     public void onPause() {
       Log.i(TAG, "MediaSessionCallback.onPause");
     }
-
-    @Override
+  @Override
     public void onStop() {
       Log.i(TAG, "MediaSessionCallback.onStop");
-      stopForeground(true);
-      stopSelf();
+        stopForeground(true);
+        stopSelf();
     }
 
     @Override
